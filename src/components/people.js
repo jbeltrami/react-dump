@@ -3,12 +3,15 @@ import Axios from 'axios';
 import Person from './person';
 import PeopleAgeFilter from './peopleAgeFilter';
 import PeopleGenderFilter from './peopleGenderFilter';
+import PeoplePagination from './peoplePagination';
 
 class People extends Component {
   state = {
     people: [],
     ages: [20, 40, 60, 70],
     genders: ['female', 'male'],
+    currentPage: 1,
+    pplPerPage: 6,
   };
 
   componentDidMount() {
@@ -36,6 +39,7 @@ class People extends Component {
 
     this.setState({
       people: [...filteredPeople],
+      currentPage: 1,
     });
   };
 
@@ -45,6 +49,7 @@ class People extends Component {
 
     this.setState({
       people: [...filteredPeople],
+      currentPage: 1,
     });
   };
 
@@ -57,8 +62,18 @@ class People extends Component {
     });
   };
 
+  handlePagination = page => {
+    this.setState({
+      currentPage: Number(page),
+    });
+  };
+
   render() {
-    const { people, ages, genders } = this.state;
+    const { people, ages, genders, currentPage, pplPerPage } = this.state;
+
+    const indexOfLastPerson = currentPage * pplPerPage;
+    const indexOfFirstPerson = indexOfLastPerson - pplPerPage;
+    const currentPeople = people.slice(indexOfFirstPerson, indexOfLastPerson);
 
     return (
       <div>
@@ -85,10 +100,16 @@ class People extends Component {
           />
 
           <div className="row align-item-center justify-content-center mt-4">
-            {people.map((person, index) => (
+            {currentPeople.map((person, index) => (
               <Person {...person} key={index} onDelete={this.handleDelete} />
             ))}
           </div>
+
+          <PeoplePagination
+            people={people}
+            pplPerPage={pplPerPage}
+            onPaginate={this.handlePagination}
+          />
         </div>
       </div>
     );

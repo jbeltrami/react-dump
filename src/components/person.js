@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 export default function Person(props) {
   const { name, dob, email, gender } = props;
   return (
-    <div className="col-lg-3 my-4">
+    <div className="col-lg-4 my-4">
       <p className="mb-0">
         Name: {name.first} {name.last}
       </p>
