@@ -5,6 +5,41 @@ import PeopleAgeFilter from './peopleAgeFilter';
 import PeopleGenderFilter from './peopleGenderFilter';
 import PeoplePagination from './peoplePagination';
 
+/*
+
+  Re-factor this component with the following:
+
+  state = {
+    people: [],
+    currentPage: 1,
+    pplPerPage: 6,
+    job: ['leadership'],
+    location: ['Miami'],
+    service: ['OCIO'],
+    pplToRender[<substet of this.state.people>]
+  }
+
+  // Filter Function:
+  const { job, location, service } = this.state
+
+  applyFilter = (people, job, location, service) => {
+    const filtered = people
+                      .filter(e => e.job === job) // add if statement to verify if 'job' is not empty
+                      .filter(e => e.location === location) // add if statement to verify if 'location' is not empty
+                      .filter(e => e.service === service) // add if statement to verify if 'service' is not empty
+
+    this.setState(() => {
+      pplToRender: [...filtered]
+    })
+  }
+
+  // Render Component based on pplToRender
+  {pplToRender.map((person, index) => (
+              <Person {...person} key={index} onDelete={this.handleDelete} />
+            ))}
+
+*/
+
 class People extends Component {
   state = {
     people: [],
@@ -26,7 +61,6 @@ class People extends Component {
         return apiResponse.sort((a, b) => a.name.last - b.name.last);
       })
       .then(res => {
-        console.log(res);
         this.setState(() => ({
           people: [...res],
         }));
