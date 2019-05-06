@@ -65,7 +65,7 @@
     "test": "node scripts/test.js"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": "wesbos"
   },
   "browserslist": {
     "production": [

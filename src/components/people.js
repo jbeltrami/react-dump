@@ -35,8 +35,8 @@ import PeoplePagination from './peoplePagination';
 
   // Render Component based on pplToRender
   {pplToRender.map((person, index) => (
-              <Person {...person} key={index} onDelete={this.handleDelete} />
-            ))}
+        <Person {...person} key={index} onDelete={this.handleDelete} />
+      ))}
 
 */
 
@@ -53,6 +53,7 @@ class People extends Component {
     this.getAllPeople();
   }
 
+  // Function to fetch all data, when component mounts
   getAllPeople = () => {
     Axios.get('https://randomuser.me/api/?results=50')
       .then(res => {
@@ -67,6 +68,7 @@ class People extends Component {
       });
   };
 
+  // Handlers for events inside components. These will then change the state of the application and re-render the DOM.
   handleAgeFilter = age => {
     const { people } = this.state;
     const filteredPeople = people.filter(e => e.dob.age > age);
@@ -87,21 +89,13 @@ class People extends Component {
     });
   };
 
-  handleDelete = id => {
-    const { people } = this.state;
-    const filteredPeople = people.filter(e => e.id.value !== id);
-
-    this.setState({
-      people: [...filteredPeople],
-    });
-  };
-
   handlePagination = page => {
     this.setState({
       currentPage: Number(page),
     });
   };
 
+  // Render method, output mark-up based on state.
   render() {
     const { people, ages, genders, currentPage, pplPerPage } = this.state;
 
@@ -128,6 +122,7 @@ class People extends Component {
           <div className="row mt-4">
             <div className="col-lg-12">People Gender Filter:</div>
           </div>
+
           <PeopleGenderFilter
             genders={genders}
             onFilter={this.handleGenderFilter}
@@ -135,7 +130,7 @@ class People extends Component {
 
           <div className="row align-item-center justify-content-center mt-4">
             {currentPeople.map((person, index) => (
-              <Person {...person} key={index} onDelete={this.handleDelete} />
+              <Person {...person} key={index} />
             ))}
           </div>
 

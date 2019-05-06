@@ -11,12 +11,7 @@ const peoplePagination = props => {
 
   return (
     <div className="row">
-      <div
-        className="col-lg-12 d-flex align-items-center justify-content-center"
-        style={{
-          listStyleType: 'none',
-        }}
-      >
+      <div className="col-lg-12 d-flex align-items-center justify-content-center">
         {pageNumbers.map(number => (
           <button
             type="button"
@@ -26,6 +21,7 @@ const peoplePagination = props => {
               listStyleType: 'none',
               marginRight: '20px',
               cursor: 'pointer',
+              border: 'none',
               borderBottom: '3px solid black',
             }}
             onClick={() => onPaginate(number)}
