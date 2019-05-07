@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 const peoplePagination = props => {
@@ -35,7 +35,7 @@ const peoplePagination = props => {
 };
 
 peoplePagination.propTypes = {
-  people: PropTypes.object,
+  people: PropTypes.array,
   pplPerPage: PropTypes.number,
   onPaginate: PropTypes.func,
 };

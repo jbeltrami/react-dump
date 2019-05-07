@@ -55,11 +55,50 @@ class People extends Component {
 
   // Function to fetch all data, when component mounts
   getAllPeople = () => {
-    Axios.get('https://randomuser.me/api/?results=50')
+    Axios.get('http://localhost/mig/wp-json/wp/v2/people?_embed')
       .then(res => {
-        const apiResponse = res.data.results;
+        const apiResponse = res.data;
 
-        return apiResponse.sort((a, b) => a.name.last - b.name.last);
+        async function reArrangePeople() {
+          let leaders = [];
+          let nonLeaders = [];
+
+          leaders = await apiResponse
+            .filter(e => e.acf.division === 'Leadership')
+            .sort((a, b) =>
+              a.title.rendered
+                .toLowerCase()
+                .split(' ')
+                .pop()
+                .localeCompare(
+                  b.title.rendered
+                    .toLowerCase()
+                    .split(' ')
+                    .pop()
+                )
+            );
+
+          nonLeaders = await apiResponse
+            .filter(e => e.acf.division !== 'Leadership')
+            .sort((a, b) =>
+              a.title.rendered
+                .toLowerCase()
+                .split(' ')
+                .pop()
+                .localeCompare(
+                  b.title.rendered
+                    .toLowerCase()
+                    .split(' ')
+                    .pop()
+                )
+            );
+
+          const sortedResponse = await leaders.concat(nonLeaders);
+
+          return sortedResponse;
+        }
+
+        return reArrangePeople();
       })
       .then(res => {
         this.setState(() => ({
@@ -104,14 +143,14 @@ class People extends Component {
     const currentPeople = people.slice(indexOfFirstPerson, indexOfLastPerson);
 
     return (
-      <div>
+      <div className="rps container-spacer">
         <div className="container">
-          <div className="row">
+          {/* <div className="row">
             <div className="col-lg-12">
               <h1>People will go here</h1>
               <h3>based on: https://randomuser.me/documentation </h3>
             </div>
-          </div>
+          </div> */}
 
           <div className="row mt-4">
             <div className="col-lg-12">People Age Filter:</div>
@@ -128,7 +167,7 @@ class People extends Component {
             onFilter={this.handleGenderFilter}
           />
 
-          <div className="row align-item-center justify-content-center mt-4">
+          <div className="row no-gutters rps__card-row">
             {currentPeople.map((person, index) => (
               <Person {...person} key={index} />
             ))}
