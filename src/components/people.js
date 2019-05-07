@@ -1,55 +1,24 @@
 import React, { Component } from 'react';
 import Axios from 'axios';
 import Person from './person';
-// import PeopleAgeFilter from './peopleAgeFilter';
-// import PeopleGenderFilter from './peopleGenderFilter';
 import PeoplePagination from './peoplePagination';
 import LocationFilter from './locationFilter';
-
-/*
-
-  Re-factor this component with the following:
-
-  state = {
-    people: [],
-    currentPage: 1,
-    pplPerPage: 6,
-    job: ['leadership'],
-    location: ['Miami'],
-    service: ['OCIO'],
-    pplToRender[<substet of this.state.people>]
-  }
-
-  // Filter Function:
-  const { job, location, service } = this.state
-
-  applyFilter = (people, job, location, service) => {
-    const filtered = people
-                      .filter(e => e.job === job) // add if statement to verify if 'job' is not empty
-                      .filter(e => e.location === location) // add if statement to verify if 'location' is not empty
-                      .filter(e => e.service === service) // add if statement to verify if 'service' is not empty
-
-    this.setState(() => {
-      pplToRender: [...filtered]
-    })
-  }
-
-  // Render Component based on pplToRender
-  {pplToRender.map((person, index) => (
-        <Person {...person} key={index} onDelete={this.handleDelete} />
-      ))}
-
-*/
+import DivisionFilter from './divisionFilter';
 
 class People extends Component {
   state = {
     people: [],
     currentPage: 1,
     pplPerPage: 6,
-    // division: ['All'],
+    divisions: [],
     locations: [],
-    // service: ['All'],
+    // services: [],
     pplToRender: [],
+    filters: {
+      division: [],
+      location: [],
+      service: [],
+    },
   };
 
   componentDidMount() {
@@ -114,26 +83,104 @@ class People extends Component {
                 return a.indexOf(x) === i;
               }),
           ],
+          divisions: [
+            ...res
+              .map(e => e.acf.division)
+              .filter(function(x, i, a) {
+                return a.indexOf(x) === i;
+              }),
+          ],
         }));
       });
   };
 
-  // Handlers for events inside components. These will then change the state of the application and re-render the DOM.
+  // applyFilters is a callback for the setState method called with the filter handlers.
+  applyFilters = () => {
+    const { people, filters } = this.state;
 
+    const handleLocation = arg => {
+      const filteredLocation =
+        arg.length !== 0
+          ? people.filter(e => e.acf.location === filters.location)
+          : people;
+
+      return filteredLocation;
+    };
+
+    const handleDivision = (array, arg) => {
+      const filteredDivision =
+        arg.length !== 0
+          ? array.filter(e => e.acf.division === filters.division)
+          : array;
+
+      return filteredDivision;
+    };
+
+    const applyAllFilters = async function() {
+      const filteredLocation = await handleLocation(filters.location);
+      const filteredDivision = await handleDivision(
+        filteredLocation,
+        filters.division
+      );
+
+      return filteredDivision;
+    };
+
+    applyAllFilters().then(res =>
+      this.setState({
+        pplToRender: [...res],
+      })
+    );
+  };
+
+  // Handlers for events inside components. These will then change the state of the application and re-render the DOM.
   handleLocationFilter = location => {
-    const { people } = this.state;
-    let filteredPeople;
+    const { filters } = this.state;
 
     if (location !== 'All') {
-      filteredPeople = people.filter(e => e.acf.location === location);
-      this.setState({
-        pplToRender: [...filteredPeople],
-        currentPage: 1,
-      });
+      this.setState(
+        {
+          currentPage: 1,
+          filters: { ...filters, location },
+        },
+        // The second parameter of setState is a function to run after setState is applied
+        () => {
+          this.applyFilters();
+        }
+      );
     } else {
-      this.setState({
-        pplToRender: [...people],
-      });
+      this.setState(
+        {
+          filters: { ...filters, location: [] },
+        },
+        () => {
+          this.applyFilters();
+        }
+      );
+    }
+  };
+
+  handleDivisionFilter = division => {
+    const { filters } = this.state;
+    if (division !== 'All') {
+      this.setState(
+        {
+          currentPage: 1,
+          filters: { ...filters, division },
+        },
+        () => {
+          this.applyFilters();
+        }
+      );
+    } else {
+      this.setState(
+        {
+          filters: { ...filters, division: [] },
+        },
+        () => {
+          this.applyFilters();
+        }
+      );
     }
   };
 
@@ -145,7 +192,13 @@ class People extends Component {
 
   // Render method, output mark-up based on state.
   render() {
-    const { currentPage, pplPerPage, pplToRender, locations } = this.state;
+    const {
+      currentPage,
+      pplPerPage,
+      pplToRender,
+      locations,
+      divisions,
+    } = this.state;
 
     const indexOfLastPerson = currentPage * pplPerPage;
     const indexOfFirstPerson = indexOfLastPerson - pplPerPage;
@@ -157,10 +210,21 @@ class People extends Component {
     return (
       <div className="rps container-spacer">
         <div className="container">
-          <LocationFilter
-            locations={locations}
-            onFilterLocation={this.handleLocationFilter}
-          />
+          <div className="row">
+            <div className="col-lg-4">
+              <LocationFilter
+                locations={locations}
+                onFilterLocation={this.handleLocationFilter}
+              />
+            </div>
+
+            <div className="col-lg-4">
+              <DivisionFilter
+                divisions={divisions}
+                onFilterDivision={this.handleDivisionFilter}
+              />
+            </div>
+          </div>
 
           <div className="row no-gutters rps__card-row">
             {currentPeople.map((person, index) => (
