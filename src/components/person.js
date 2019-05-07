@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 export default function Person(props) {
   const { acf, title, link } = props;
+
   return (
     <div className="col-lg-4 col-md-6">
       <div className="rps__card h-100">

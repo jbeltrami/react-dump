@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import Axios from 'axios';
 import Person from './person';
-import PeopleAgeFilter from './peopleAgeFilter';
-import PeopleGenderFilter from './peopleGenderFilter';
+// import PeopleAgeFilter from './peopleAgeFilter';
+// import PeopleGenderFilter from './peopleGenderFilter';
 import PeoplePagination from './peoplePagination';
+import LocationFilter from './locationFilter';
 
 /*
 
@@ -43,10 +44,12 @@ import PeoplePagination from './peoplePagination';
 class People extends Component {
   state = {
     people: [],
-    ages: [20, 40, 60, 70],
-    genders: ['female', 'male'],
     currentPage: 1,
     pplPerPage: 6,
+    // division: ['All'],
+    locations: [],
+    // service: ['All'],
+    pplToRender: [],
   };
 
   componentDidMount() {
@@ -103,29 +106,35 @@ class People extends Component {
       .then(res => {
         this.setState(() => ({
           people: [...res],
+          pplToRender: [...res],
+          locations: [
+            ...res
+              .map(e => e.acf.location)
+              .filter(function(x, i, a) {
+                return a.indexOf(x) === i;
+              }),
+          ],
         }));
       });
   };
 
   // Handlers for events inside components. These will then change the state of the application and re-render the DOM.
-  handleAgeFilter = age => {
+
+  handleLocationFilter = location => {
     const { people } = this.state;
-    const filteredPeople = people.filter(e => e.dob.age > age);
+    let filteredPeople;
 
-    this.setState({
-      people: [...filteredPeople],
-      currentPage: 1,
-    });
-  };
-
-  handleGenderFilter = gender => {
-    const { people } = this.state;
-    const filteredPeople = people.filter(e => e.gender === gender);
-
-    this.setState({
-      people: [...filteredPeople],
-      currentPage: 1,
-    });
+    if (location !== 'All') {
+      filteredPeople = people.filter(e => e.acf.location === location);
+      this.setState({
+        pplToRender: [...filteredPeople],
+        currentPage: 1,
+      });
+    } else {
+      this.setState({
+        pplToRender: [...people],
+      });
+    }
   };
 
   handlePagination = page => {
@@ -136,35 +145,21 @@ class People extends Component {
 
   // Render method, output mark-up based on state.
   render() {
-    const { people, ages, genders, currentPage, pplPerPage } = this.state;
+    const { currentPage, pplPerPage, pplToRender, locations } = this.state;
 
     const indexOfLastPerson = currentPage * pplPerPage;
     const indexOfFirstPerson = indexOfLastPerson - pplPerPage;
-    const currentPeople = people.slice(indexOfFirstPerson, indexOfLastPerson);
+    const currentPeople = pplToRender.slice(
+      indexOfFirstPerson,
+      indexOfLastPerson
+    );
 
     return (
       <div className="rps container-spacer">
         <div className="container">
-          {/* <div className="row">
-            <div className="col-lg-12">
-              <h1>People will go here</h1>
-              <h3>based on: https://randomuser.me/documentation </h3>
-            </div>
-          </div> */}
-
-          <div className="row mt-4">
-            <div className="col-lg-12">People Age Filter:</div>
-          </div>
-
-          <PeopleAgeFilter ages={ages} onFilter={this.handleAgeFilter} />
-
-          <div className="row mt-4">
-            <div className="col-lg-12">People Gender Filter:</div>
-          </div>
-
-          <PeopleGenderFilter
-            genders={genders}
-            onFilter={this.handleGenderFilter}
+          <LocationFilter
+            locations={locations}
+            onFilterLocation={this.handleLocationFilter}
           />
 
           <div className="row no-gutters rps__card-row">
@@ -174,7 +169,7 @@ class People extends Component {
           </div>
 
           <PeoplePagination
-            people={people}
+            people={pplToRender}
             pplPerPage={pplPerPage}
             onPaginate={this.handlePagination}
           />
