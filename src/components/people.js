@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import Axios from 'axios';
 import Person from './person';
 import PeoplePagination from './peoplePagination';
-import LocationFilter from './locationFilter';
-import DivisionFilter from './divisionFilter';
-import ServiceFilter from './serviceFilter';
+import Filters from './filters';
 
 class People extends Component {
   state = {
@@ -161,7 +159,6 @@ class People extends Component {
     };
 
     applyAllFilters().then(res => {
-      console.log(res);
       this.setState({
         pplToRender: [...res],
       });
@@ -169,14 +166,14 @@ class People extends Component {
   };
 
   // Handlers for events inside components. These will then change the state of the application and re-render the DOM.
-  handleLocationFilter = location => {
+  handleFilter = (arg, type) => {
     const { filters } = this.state;
 
-    if (location !== 'All') {
+    if (arg !== 'All') {
       this.setState(
         {
           currentPage: 1,
-          filters: { ...filters, location },
+          filters: { ...filters, [type]: arg },
         },
         // The second parameter of setState is a callback to run after setState is applied
         () => {
@@ -186,55 +183,7 @@ class People extends Component {
     } else {
       this.setState(
         {
-          filters: { ...filters, location: [] },
-        },
-        () => {
-          this.applyFilters();
-        }
-      );
-    }
-  };
-
-  handleDivisionFilter = division => {
-    const { filters } = this.state;
-    if (division !== 'All') {
-      this.setState(
-        {
-          currentPage: 1,
-          filters: { ...filters, division },
-        },
-        () => {
-          this.applyFilters();
-        }
-      );
-    } else {
-      this.setState(
-        {
-          filters: { ...filters, division: [] },
-        },
-        () => {
-          this.applyFilters();
-        }
-      );
-    }
-  };
-
-  handleServiceFilter = service => {
-    const { filters } = this.state;
-    if (service !== 'All') {
-      this.setState(
-        {
-          currentPage: 1,
-          filters: { ...filters, service },
-        },
-        () => {
-          this.applyFilters();
-        }
-      );
-    } else {
-      this.setState(
-        {
-          filters: { ...filters, service: [] },
+          filters: { ...filters, [type]: [] },
         },
         () => {
           this.applyFilters();
@@ -258,6 +207,7 @@ class People extends Component {
       locations,
       divisions,
       services,
+      filters,
     } = this.state;
 
     const indexOfLastPerson = currentPage * pplPerPage;
@@ -272,23 +222,29 @@ class People extends Component {
         <div className="container">
           <div className="row">
             <div className="col-lg-4">
-              <LocationFilter
-                locations={locations}
-                onFilterLocation={this.handleLocationFilter}
+              <Filters
+                filterType="location"
+                filters={filters}
+                filterParams={locations}
+                onFilterLocation={this.handleFilter}
               />
             </div>
 
             <div className="col-lg-4">
-              <DivisionFilter
-                divisions={divisions}
-                onFilterDivision={this.handleDivisionFilter}
+              <Filters
+                filterType="division"
+                filters={filters}
+                filterParams={divisions}
+                onFilterLocation={this.handleFilter}
               />
             </div>
 
             <div className="col-lg-4">
-              <ServiceFilter
-                services={services}
-                onFilterService={this.handleServiceFilter}
+              <Filters
+                filterType="service"
+                filters={filters}
+                filterParams={services}
+                onFilterLocation={this.handleFilter}
               />
             </div>
           </div>
@@ -299,7 +255,7 @@ class People extends Component {
                 <Person {...person} key={index} />
               ))
             ) : (
-              <div className="col-lg-6">
+              <div className="col-lg-12">
                 <h1>Sorry,</h1>
                 <h4>no search results match your criteria</h4>
               </div>
