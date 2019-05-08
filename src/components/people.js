@@ -4,6 +4,7 @@ import Person from './person';
 import PeoplePagination from './peoplePagination';
 import LocationFilter from './locationFilter';
 import DivisionFilter from './divisionFilter';
+import ServiceFilter from './serviceFilter';
 
 class People extends Component {
   state = {
@@ -12,7 +13,7 @@ class People extends Component {
     pplPerPage: 6,
     divisions: [],
     locations: [],
-    // services: [],
+    services: [],
     pplToRender: [],
     filters: {
       division: [],
@@ -73,6 +74,19 @@ class People extends Component {
         return reArrangePeople();
       })
       .then(res => {
+        const allServices = [];
+
+        res
+          .map(e => e.acf.accordions.service_areas)
+          .forEach(el => {
+            el.forEach(e => allServices.push(e.areas));
+          });
+
+        const singleServices = allServices.filter(function(x, i, a) {
+          return a.indexOf(x) === i;
+        });
+
+        // Set states for DOM rendering
         this.setState(() => ({
           people: [...res],
           pplToRender: [...res],
@@ -90,6 +104,7 @@ class People extends Component {
                 return a.indexOf(x) === i;
               }),
           ],
+          services: [...singleServices],
         }));
       });
   };
@@ -100,20 +115,35 @@ class People extends Component {
 
     const handleLocation = arg => {
       const filteredLocation =
-        arg.length !== 0
-          ? people.filter(e => e.acf.location === filters.location)
-          : people;
+        arg.length !== 0 ? people.filter(e => e.acf.location === arg) : people;
 
       return filteredLocation;
     };
 
     const handleDivision = (array, arg) => {
       const filteredDivision =
-        arg.length !== 0
-          ? array.filter(e => e.acf.division === filters.division)
-          : array;
+        arg.length !== 0 ? array.filter(e => e.acf.division === arg) : array;
 
       return filteredDivision;
+    };
+
+    const handleService = (array, arg) => {
+      const filteredElements = [];
+      array.forEach(e =>
+        e.acf.accordions.service_areas.forEach(el => {
+          if (arg.length && el.areas === arg) {
+            filteredElements.push(e);
+          }
+        })
+      );
+
+      const singleServices = filteredElements.filter(function(x, i, a) {
+        return a.indexOf(x) === i;
+      });
+
+      const filteredService = arg.length !== 0 ? singleServices : array;
+
+      return filteredService;
     };
 
     const applyAllFilters = async function() {
@@ -122,15 +152,20 @@ class People extends Component {
         filteredLocation,
         filters.division
       );
+      const paramToRender = await handleService(
+        filteredDivision,
+        filters.service
+      );
 
-      return filteredDivision;
+      return paramToRender;
     };
 
-    applyAllFilters().then(res =>
+    applyAllFilters().then(res => {
+      console.log(res);
       this.setState({
         pplToRender: [...res],
-      })
-    );
+      });
+    });
   };
 
   // Handlers for events inside components. These will then change the state of the application and re-render the DOM.
@@ -143,7 +178,7 @@ class People extends Component {
           currentPage: 1,
           filters: { ...filters, location },
         },
-        // The second parameter of setState is a function to run after setState is applied
+        // The second parameter of setState is a callback to run after setState is applied
         () => {
           this.applyFilters();
         }
@@ -184,6 +219,30 @@ class People extends Component {
     }
   };
 
+  handleServiceFilter = service => {
+    const { filters } = this.state;
+    if (service !== 'All') {
+      this.setState(
+        {
+          currentPage: 1,
+          filters: { ...filters, service },
+        },
+        () => {
+          this.applyFilters();
+        }
+      );
+    } else {
+      this.setState(
+        {
+          filters: { ...filters, service: [] },
+        },
+        () => {
+          this.applyFilters();
+        }
+      );
+    }
+  };
+
   handlePagination = page => {
     this.setState({
       currentPage: Number(page),
@@ -198,6 +257,7 @@ class People extends Component {
       pplToRender,
       locations,
       divisions,
+      services,
     } = this.state;
 
     const indexOfLastPerson = currentPage * pplPerPage;
@@ -224,12 +284,26 @@ class People extends Component {
                 onFilterDivision={this.handleDivisionFilter}
               />
             </div>
+
+            <div className="col-lg-4">
+              <ServiceFilter
+                services={services}
+                onFilterService={this.handleServiceFilter}
+              />
+            </div>
           </div>
 
           <div className="row no-gutters rps__card-row">
-            {currentPeople.map((person, index) => (
-              <Person {...person} key={index} />
-            ))}
+            {currentPeople.length ? (
+              currentPeople.map((person, index) => (
+                <Person {...person} key={index} />
+              ))
+            ) : (
+              <div className="col-lg-6">
+                <h1>Sorry,</h1>
+                <h4>no search results match your criteria</h4>
+              </div>
+            )}
           </div>
 
           <PeoplePagination
