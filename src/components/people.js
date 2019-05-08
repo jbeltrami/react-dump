@@ -172,6 +172,7 @@ class People extends Component {
     if (arg !== 'All') {
       this.setState(
         {
+          pplToRender: [],
           currentPage: 1,
           filters: { ...filters, [type]: arg },
         },
@@ -183,6 +184,7 @@ class People extends Component {
     } else {
       this.setState(
         {
+          pplToRender: [],
           filters: { ...filters, [type]: [] },
         },
         () => {
@@ -193,9 +195,15 @@ class People extends Component {
   };
 
   handlePagination = page => {
-    this.setState({
-      currentPage: Number(page),
-    });
+    this.setState(
+      {
+        pplToRender: [],
+        currentPage: Number(page),
+      },
+      () => {
+        this.applyFilters();
+      }
+    );
   };
 
   // Render method, output mark-up based on state.
@@ -218,7 +226,7 @@ class People extends Component {
     );
 
     return (
-      <div className="rps container-spacer">
+      <div className="rps container-spacer people-index">
         <div className="container">
           <div className="row">
             <div className="col-lg-4">
