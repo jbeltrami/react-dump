@@ -35,7 +35,7 @@ class People extends Component {
           let nonLeaders = [];
 
           leaders = await apiResponse
-            .filter(e => e.acf.division === 'Leadership')
+            .filter(e => e.acf.division.indexOf('Leadership') !== -1)
             .sort((a, b) =>
               a.title.rendered
                 .toLowerCase()
@@ -50,7 +50,7 @@ class People extends Component {
             );
 
           nonLeaders = await apiResponse
-            .filter(e => e.acf.division !== 'Leadership')
+            .filter(e => e.acf.division.indexOf('Leadership') === -1)
             .sort((a, b) =>
               a.title.rendered
                 .toLowerCase()
@@ -73,6 +73,7 @@ class People extends Component {
       })
       .then(res => {
         const allServices = [];
+        const allDivisions = [];
 
         res
           .map(e => e.acf.accordions.service_areas)
@@ -81,6 +82,16 @@ class People extends Component {
           });
 
         const singleServices = allServices.filter(function(x, i, a) {
+          return a.indexOf(x) === i;
+        });
+
+        res
+          .map(e => e.acf.division)
+          .forEach(el => {
+            el.forEach(e => allDivisions.push(e));
+          });
+
+        const singleDivisions = allDivisions.filter(function(x, i, a) {
           return a.indexOf(x) === i;
         });
 
@@ -95,13 +106,7 @@ class People extends Component {
                 return a.indexOf(x) === i;
               }),
           ],
-          divisions: [
-            ...res
-              .map(e => e.acf.division)
-              .filter(function(x, i, a) {
-                return a.indexOf(x) === i;
-              }),
-          ],
+          divisions: [...singleDivisions],
           services: [...singleServices],
         }));
       });
@@ -114,13 +119,14 @@ class People extends Component {
     const handleLocation = arg => {
       const filteredLocation =
         arg.length !== 0 ? people.filter(e => e.acf.location === arg) : people;
-
       return filteredLocation;
     };
 
     const handleDivision = (array, arg) => {
       const filteredDivision =
-        arg.length !== 0 ? array.filter(e => e.acf.division === arg) : array;
+        arg.length !== 0
+          ? array.filter(e => e.acf.division.indexOf(arg) !== -1)
+          : array;
 
       return filteredDivision;
     };
