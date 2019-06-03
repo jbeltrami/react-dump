@@ -4,6 +4,12 @@ import PropTypes from 'prop-types';
 export default function Person(props) {
   const { acf, title, link } = props;
 
+  const isCertified = [];
+
+  if (acf.certifications) {
+    acf.certifications.map(e => isCertified.push(e.certification));
+  }
+
   return (
     <div className="col-lg-4 col-md-6">
       <div className="rps__card h-100">
@@ -14,7 +20,7 @@ export default function Person(props) {
             alt={acf.portrait.alt}
           />
 
-          {acf.division === 'Leadership' ? (
+          {acf.division.indexOf('Leadership') !== -1 ? (
             <figcaption>
               <h5>Leadership</h5>
             </figcaption>
@@ -24,7 +30,16 @@ export default function Person(props) {
         </figure>
         <div className="rps__card-wrapper">
           <h4 className="rps__card-name">
-            <a href={link}>{title.rendered}</a>
+            <a href={link}>
+              {title.rendered}{' '}
+              {isCertified.length !== 0 ? (
+                <span style={{ fontSize: '12px' }}>
+                  {isCertified.map(e => `, ${e}`)}
+                </span>
+              ) : (
+                ''
+              )}{' '}
+            </a>
           </h4>
           <p className="rps__card-title">{acf.job_title}</p>
           <p className="rps__card-location">{acf.location}</p>
